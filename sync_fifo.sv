@@ -15,13 +15,12 @@ module sync_fifo #(
 
     logic [WIDTH-1:0] mem [DEPTH];           // the storage
     logic [AW-1:0]    wptr, rptr;            // 3-bit pointers wrap 7 → 0 by themselves
-    logic [AW:0]      count;                 // Q1: why AW+1 bits (4), not AW (3)?
+    logic [AW:0]      count;                 
 
     // An operation is "accepted" only if the FIFO can take it (the count bug from earlier!)
-    logic do_write, do_read;
-    // assign do_write = wr_en && 1'b1;                  // Q2: write enabled AND ...?
-    assign do_write = wr_en && !full;                  // Q2: write enabled AND ...?
-    assign do_read  = rd_en && !empty;                  //     read enabled AND ...?
+    logic do_write, do_read;                  
+    assign do_write = wr_en && !full;                  
+    assign do_read  = rd_en && !empty;                  
 
     // Storage: no reset needed, since the data is only valid once written
     always_ff @(posedge clk)
@@ -34,19 +33,19 @@ module sync_fifo #(
             rptr  <= '0;
             count <= '0;
         end else begin
-            if (do_write) wptr <= wptr + 1'b1;      // Q3: move the write pointer
-            if (do_read)  rptr <= rptr + 1'b1;      //     move the read pointer
+            if (do_write) wptr <= wptr + 1'b1;      
+            if (do_read)  rptr <= rptr + 1'b1;      
 
             case ({do_write, do_read})
-                2'b10:   count <= count + 1'b1;      // Q4: write only
-                2'b01:   count <= count - 1'b1;      //     read only
-                default: count <= count;     // both or neither: unchanged
+                2'b10:   count <= count + 1'b1;      
+                2'b01:   count <= count - 1'b1;      
+                default: count <= count;     
             endcase
         end
     end
 
     // Outputs
-    assign full  = (count == DEPTH);                     // Q5
+    assign full  = (count == DEPTH);                     
     assign empty = (count == 0);
-    assign dout  = mem[rptr];                // FWFT: always show the oldest entry
+    assign dout  = mem[rptr];               
 endmodule
